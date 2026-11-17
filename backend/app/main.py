@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import face, health
+from app.api import face, health, qr
 from app.config import APP_NAME, APP_VERSION, CORS_ORIGIN_REGEX, TMP_DIR
 
 
@@ -30,6 +30,7 @@ app.add_middleware(
 # Routers
 app.include_router(health.router)
 app.include_router(face.router)
+app.include_router(qr.router)
 
 
 @app.get("/")
