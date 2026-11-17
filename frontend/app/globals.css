@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
+/* Dark mode: html tag-la "dark" class irundha dark: classes work aagum */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Light theme colors */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+}
+
+/* Dark theme colors */
+.dark {
+  --background: #0b0f19;
+  --foreground: #e5e7eb;
 }
 
 @theme inline {
@@ -12,15 +22,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
