@@ -1,0 +1,20 @@
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Temp files (user photos commit aaga koodadhu)
+backend/tmp/*
+!backend/tmp/.gitkeep
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Env + OS
+.env
+.env.local
+.DS_Store
+Thumbs.db
