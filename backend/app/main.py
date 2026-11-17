@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import face, health
 from app.config import APP_NAME, APP_VERSION, CORS_ORIGIN_REGEX, TMP_DIR
 
 
@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     # Server start: tmp folder irukka nu confirm pannrom
     TMP_DIR.mkdir(parents=True, exist_ok=True)
     yield
-    # Server stop: (cleanup logic Step 5-la serkkalam)
+    # Server stop: (cleanup logic pinnadi serkkalam)
 
 
 app = FastAPI(title=APP_NAME, version=APP_VERSION, lifespan=lifespan)
@@ -29,6 +29,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(health.router)
+app.include_router(face.router)
 
 
 @app.get("/")

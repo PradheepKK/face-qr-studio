@@ -20,3 +20,6 @@ frontend/out/
 Thumbs.db
 # VS Code settings
 .vscode/
+
+# ML models (download script-la varum)
+backend/models/*.task
