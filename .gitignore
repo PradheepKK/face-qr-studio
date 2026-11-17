@@ -18,3 +18,5 @@ frontend/out/
 .env.local
 .DS_Store
 Thumbs.db
+# VS Code settings
+.vscode/
