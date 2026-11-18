@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import face, health, qr
+from app.api import face, generate, health, qr
 from app.config import APP_NAME, APP_VERSION, CORS_ORIGIN_REGEX, TMP_DIR
 
 
@@ -25,12 +25,14 @@ app.add_middleware(
     allow_origin_regex=CORS_ORIGIN_REGEX,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],  # frontend X-QR-* headers padikka
 )
 
 # Routers
 app.include_router(health.router)
 app.include_router(face.router)
 app.include_router(qr.router)
+app.include_router(generate.router)
 
 
 @app.get("/")
