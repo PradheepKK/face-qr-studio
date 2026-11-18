@@ -1,15 +1,18 @@
 "use client";
 
-import { ImageIcon, QrCode } from "lucide-react";
+import { ImageIcon, QrCode, Loader2, Check, X } from "lucide-react";
 import { usePreviewUrl } from "@/lib/usePreviewUrl";
-import ValidationBadge from "./ValidationBadge";
+import type { JobResultMeta } from "@/lib/api";
 import type { ValidationStatus } from "@/lib/types";
+import ValidationBadge from "./ValidationBadge";
 
 interface Props {
   personFile: File | null;
   resultUrl: string | null;
   validation: ValidationStatus;
   progress: number | null; // null = generate nadakkala
+  progressMessage: string;
+  meta: JobResultMeta | null;
 }
 
 export default function ResultPreview({
@@ -17,6 +20,8 @@ export default function ResultPreview({
   resultUrl,
   validation,
   progress,
+  progressMessage,
+  meta,
 }: Props) {
   const beforeUrl = usePreviewUrl(personFile);
 
@@ -42,10 +47,15 @@ export default function ResultPreview({
         {/* After */}
         <div>
           <p className="mb-2 text-sm font-medium text-slate-500">After (Face QR)</p>
-          <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
+          <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white dark:bg-slate-800">
             {resultUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={resultUrl} alt="Face QR" className="h-full w-full object-contain" />
+              <img
+                src={resultUrl}
+                alt="Face QR"
+                className="h-full w-full object-contain"
+                style={{ imageRendering: "pixelated" }}
+              />
             ) : (
               <div className="px-4 text-center text-slate-400">
                 <QrCode className="mx-auto mb-2 h-10 w-10" />
@@ -56,16 +66,19 @@ export default function ResultPreview({
         </div>
       </div>
 
-      {/* Progress bar (generate nadakkum bodhu mattum theriyum) */}
+      {/* Real progress bar */}
       {progress !== null && (
         <div>
-          <div className="mb-1 flex justify-between text-sm">
-            <span>Generating...</span>
+          <div className="mb-1 flex items-center justify-between text-sm">
+            <span className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
+              {progressMessage}
+            </span>
             <span>{progress}%</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
             <div
-              className="h-full rounded-full bg-indigo-600 transition-all duration-300"
+              className="h-full rounded-full bg-indigo-600 transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -76,6 +89,55 @@ export default function ResultPreview({
         <span className="text-sm font-medium text-slate-500">QR Validation:</span>
         <ValidationBadge status={validation} />
       </div>
+
+      {/* Real validation details (backend-la irundhu) */}
+      {meta && (
+        <div className="space-y-2 text-sm">
+          <p
+            className={
+              meta.verified
+                ? "text-emerald-700 dark:text-emerald-300"
+                : "text-red-700 dark:text-red-300"
+            }
+          >
+            {meta.message}
+          </p>
+          <p className="text-xs text-slate-500">
+            {meta.summary} · QR version {meta.qr_version} · Level {meta.ec_level} · mask {meta.mask}
+          </p>
+
+          <details className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+            <summary className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">
+              Scan test details
+            </summary>
+
+            <div className="mt-3 grid grid-cols-2 gap-1 text-xs sm:grid-cols-4">
+              {meta.checks.map((c) => (
+                <span
+                  key={`${c.decoder}-${c.variant}`}
+                  className={`inline-flex items-center gap-1 ${
+                    c.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                  }`}
+                >
+                  {c.ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                  {c.decoder} @ {c.variant}
+                  {c.required ? " *" : ""}
+                </span>
+              ))}
+            </div>
+            <p className="mt-1 text-[11px] text-slate-500">* = required check</p>
+
+            <ul className="mt-3 space-y-1 text-xs text-slate-500">
+              {meta.attempts.map((a) => (
+                <li key={a.n}>
+                  Attempt {a.n}: version {a.v}, center dot {a.c} →{" "}
+                  {a.err ? `error: ${a.err}` : `${a.p}/${a.t} checks${a.ok ? " (verified)" : ""}`}
+                </li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import ValidationBadge from "./ValidationBadge";
 
 interface Props {
   resultUrl: string | null; // generate aana Face QR image URL (Step 9-la varum)
+  resultResolution: number | null; // generate aana image-oda unmaiyaana resolution
   validation: ValidationStatus;
   resolution: Resolution;
   onResolutionChange: (r: Resolution) => void;
@@ -25,6 +26,7 @@ function triggerDownload(href: string, filename: string) {
 
 export default function DownloadPanel({
   resultUrl,
+  resultResolution,
   validation,
   resolution,
   onResolutionChange,
@@ -38,8 +40,7 @@ export default function DownloadPanel({
     const res = await fetch(resultUrl);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-    triggerDownload(url, `face-qr-${resolution}px.png`);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   // Original QR download: upload panna file-a appadiye thirumba kudukkum

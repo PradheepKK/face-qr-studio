@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { ScanFace, QrCode, Sparkles, ShieldCheck, Check, Circle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ScanFace,
+  QrCode,
+  Sparkles,
+  ShieldCheck,
+  Check,
+  Circle,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import UploadCard from "@/components/UploadCard";
 import StyleOptions from "@/components/StyleOptions";
 import ResultPreview from "@/components/ResultPreview";
 import DownloadPanel from "@/components/DownloadPanel";
+import { runGeneration, type JobResultMeta } from "@/lib/api";
 import { PERSON_TYPES, QR_TYPES } from "@/lib/validate";
-import {
-  DEFAULT_SETTINGS,
-  type Settings,
-  type ValidationStatus,
-} from "@/lib/types";
+import { DEFAULT_SETTINGS, type Settings, type ValidationStatus } from "@/lib/types";
 
-// Section heading (number + title). Component-a Home-ku veliya declare pannirukken.
+// Section heading (number + title)
 function Step({ n, title }: { n: number; title: string }) {
   return (
     <h2 className="mb-4 flex items-center gap-3 text-xl font-semibold">
@@ -40,18 +46,98 @@ function CheckItem({ ok, text }: { ok: boolean; text: string }) {
   );
 }
 
+interface GeneratedResult {
+  url: string; // blob URL
+  meta: JobResultMeta;
+  settings: Settings; // endha settings-la generate aachu
+}
+
 export default function Home() {
   const [person, setPerson] = useState<File | null>(null);
   const [qr, setQr] = useState<File | null>(null);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
 
-  // Idhellaam Step 9-la backend response-la irundhu set aagum.
-  // Ippo backend illa, adhunaala null / idle-la irukkum (fake data illa).
-  const [resultUrl] = useState<string | null>(null);
-  const [validation] = useState<ValidationStatus>("idle");
-  const [progress] = useState<number | null>(null);
+  const [result, setResult] = useState<GeneratedResult | null>(null);
+  const [progress, setProgress] = useState<number | null>(null); // null = generate nadakkala
+  const [progressMsg, setProgressMsg] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
+  const urlRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const generating = progress !== null;
   const ready = !!person && !!qr;
+
+  // Page close / navigate aana: request-a niruthi, blob URL-a free pannrom
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    };
+  }, []);
+
+  const clearResult = () => {
+    if (urlRef.current) {
+      URL.revokeObjectURL(urlRef.current);
+      urlRef.current = null;
+    }
+    setResult(null);
+  };
+
+  // Puthu file select panna, pazhaya result paathu confuse aagaama clear pannrom
+  const onPersonChange = (f: File | null) => {
+    setPerson(f);
+    clearResult();
+    setError(null);
+  };
+  const onQrChange = (f: File | null) => {
+    setQr(f);
+    clearResult();
+    setError(null);
+  };
+
+  const handleGenerate = async () => {
+    if (!person || !qr || generating) return;
+
+    clearResult();
+    setError(null);
+    setProgress(0);
+    setProgressMsg("Start aagudhu...");
+
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    const used = settings; // generate start aana neram irundha settings
+
+    try {
+      const { blob, meta } = await runGeneration(
+        person,
+        qr,
+        used,
+        (p, m) => {
+          setProgress(p);
+          setProgressMsg(m);
+        },
+        ctrl.signal
+      );
+      const url = URL.createObjectURL(blob);
+      urlRef.current = url;
+      setResult({ url, meta, settings: used });
+    } catch (e) {
+      if (ctrl.signal.aborted) return;
+      setError(e instanceof Error ? e.message : "Theriyaadha error nadandhuduchu.");
+    } finally {
+      setProgress(null);
+    }
+  };
+
+  const validation: ValidationStatus = result
+    ? result.meta.verified
+      ? "verified"
+      : "failed"
+    : "idle";
+
+  // Settings maathinaa, kaattara image pazhaya settings-oda
+  const stale = !!result && JSON.stringify(result.settings) !== JSON.stringify(settings);
 
   return (
     <div className="min-h-screen">
@@ -76,14 +162,12 @@ export default function Home() {
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-slate-600 dark:text-slate-400">
-            Un photo + payment QR upload pannunga. Face, QR modules-aale form
-            aagum. Thooraththula paartha face theriyum, scan pannina payment
-            QR work aagum.
+            Un photo + payment QR upload pannunga. Face, QR modules-aale form aagum.
+            Thooraththula paartha face theriyum, scan pannina payment QR work aagum.
           </p>
           <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
             <ShieldCheck className="h-4 w-4" />
-            Un photos permanent-a store aagaadhu. Temporary-a mattum process
-            aagum.
+            Un photos permanent-a store aagaadhu. Temporary-a mattum process aagum.
           </p>
         </section>
 
@@ -98,7 +182,7 @@ export default function Home() {
               allowedTypes={PERSON_TYPES}
               maxMB={10}
               file={person}
-              onFileChange={setPerson}
+              onFileChange={onPersonChange}
             />
             <UploadCard
               title="Payment QR"
@@ -107,7 +191,7 @@ export default function Home() {
               allowedTypes={QR_TYPES}
               maxMB={5}
               file={qr}
-              onFileChange={setQr}
+              onFileChange={onQrChange}
             />
           </div>
         </section>
@@ -126,17 +210,37 @@ export default function Home() {
               <CheckItem ok={!!person} text="Person photo upload aachu" />
               <CheckItem ok={!!qr} text="Payment QR upload aachu" />
             </ul>
+
             <button
-              disabled
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={handleGenerate}
+              disabled={!ready || generating}
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Sparkles className="h-4 w-4" /> Generate Face QR
+              {generating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {generating ? "Generate aagudhu..." : "Generate Face QR"}
             </button>
-            <p className="text-xs text-slate-500">
-              {ready
-                ? "Rendu files-um ready. Generation engine Step 7-9-la connect aagum, apo dhaan indha button work aagum."
-                : "Mudhalla rendu images-um upload pannunga."}
-            </p>
+
+            {!ready && (
+              <p className="text-xs text-slate-500">Mudhalla rendu images-um upload pannunga.</p>
+            )}
+
+            {error && (
+              <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                {error}
+              </p>
+            )}
+
+            {stale && (
+              <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                Settings maathitinga. Kaattara image pazhaya settings-oda irukku. Puthusa paarka
+                thirumba Generate pannunga.
+              </p>
+            )}
           </div>
         </section>
 
@@ -145,9 +249,11 @@ export default function Home() {
           <Step n={4} title="Preview & validation" />
           <ResultPreview
             personFile={person}
-            resultUrl={resultUrl}
+            resultUrl={result?.url ?? null}
             validation={validation}
             progress={progress}
+            progressMessage={progressMsg}
+            meta={result?.meta ?? null}
           />
         </section>
 
@@ -155,7 +261,8 @@ export default function Home() {
         <section>
           <Step n={5} title="Download" />
           <DownloadPanel
-            resultUrl={resultUrl}
+            resultUrl={result?.url ?? null}
+            resultResolution={result?.meta.resolution ?? null}
             validation={validation}
             resolution={settings.resolution}
             onResolutionChange={(r) => setSettings({ ...settings, resolution: r })}
