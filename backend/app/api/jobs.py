@@ -30,6 +30,8 @@ router = APIRouter(prefix="/api", tags=["jobs"])
 logger = logging.getLogger("faceqr")
 
 ALLOWED_RES = (1024, 2048, 4096)
+# Endha styles-oda renderer ready. Step 11-la "halftone", Step 12-la "pixel" serkkalam.
+BUILT_STYLES: set[str] = set()
 _slots = threading.Semaphore(2)  # max 2 jobs oru nerathula
 
 
@@ -112,7 +114,7 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
 async def create_job(
     person: UploadFile = File(...),
     qr: UploadFile = File(...),
-    style: Literal["face", "portrait", "minimal"] = Form("face"),
+    style: Literal["halftone", "pixel"] = Form("halftone"),
     qr_color: str = Form("#000000"),
     bg_color: str = Form("#ffffff"),
     face_visibility: int = Form(70, ge=0, le=100),
@@ -120,8 +122,11 @@ async def create_job(
     contrast: int = Form(50, ge=0, le=100),
     resolution: int = Form(2048),
 ):
-    if resolution not in ALLOWED_RES:
-        raise HTTPException(status_code=400, detail=f"Resolution {ALLOWED_RES}-la onnu irukkanum.")
+    if style not in BUILT_STYLES:
+        raise HTTPException(
+            status_code=501,
+            detail="Indha style-oda renderer innum ready aagala. Next step-la build pannuvom.",
+        )
     try:
         check_colors(qr_color, bg_color)  # thappu color-na udane error
     except ValueError as e:

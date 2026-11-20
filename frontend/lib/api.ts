@@ -110,15 +110,10 @@ async function createJob(
   s: Settings,
   signal: AbortSignal
 ): Promise<string> {
-  const fd = new FormData();
+   const fd = new FormData();
   fd.append("person", person);
   fd.append("qr", qr);
   fd.append("style", s.style);
-  fd.append("qr_color", s.qrColor);
-  fd.append("bg_color", s.bgColor);
-  fd.append("face_visibility", String(s.faceVisibility));
-  fd.append("density", String(s.density));
-  fd.append("contrast", String(s.contrast));
   fd.append("resolution", String(s.resolution));
   const res = await request(`${API_URL}/api/jobs`, { method: "POST", body: fd, signal });
   const data = (await res.json()) as { job_id: string };
