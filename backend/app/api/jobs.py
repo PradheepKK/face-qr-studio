@@ -31,7 +31,7 @@ logger = logging.getLogger("faceqr")
 
 ALLOWED_RES = (1024, 2048, 4096)
 # Endha styles-oda renderer ready. Step 11-la "halftone", Step 12-la "pixel" serkkalam.
-BUILT_STYLES: set[str] = set()
+BUILT_STYLES: set[str] = {"halftone"}
 _slots = threading.Semaphore(2)  # max 2 jobs oru nerathula
 
 

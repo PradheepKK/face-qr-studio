@@ -83,6 +83,14 @@ def run_retry_loop(
     max_attempts: int = MAX_ATTEMPTS,
     progress: Callable[[int, int, str], None] | None = None,
 ) -> LoopResult:
+        # Style 1 (halftone) thaniya renderer-oda run aagum
+    if style == "halftone":
+        from app.core.halftone_loop import run_halftone_loop
+
+        return run_halftone_loop(
+            person, face, payload, ec, min_version, resolution,
+            max_attempts=max_attempts, progress=progress,
+        )
     if style not in STYLE_PRESETS:
         raise ValueError(f"Theriyaadha style: {style}")
     check_colors(qr_color, bg_color)  # color thappa irundha udane error (retry-la fix aagaadhu)
