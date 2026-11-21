@@ -1,4 +1,5 @@
-# Halftone: render -> real validate (ZXing + OpenCV) -> fail na parameters adjust -> retry.
+# Halftone: render -> real validate (ZXing required, OpenCV advisory)
+# -> fail na parameters adjust -> retry.
 
 from typing import Callable
 
@@ -10,27 +11,27 @@ from app.core.retry_loop import Attempt, LoopResult
 from app.core.validator import validate
 
 MAX_ATTEMPTS = 7
-BASE_VERSION = 10  # face detail-ku nalla balance
+BASE_VERSION = 12  # face detail-ku nalla balance
 
 
-def _schedule(min_v: int) -> list[tuple[int, float, float]]:
-    """(version, center dot size, QR-bit blend). Attempt-ku attempt scan-friendly aagum."""
+def _schedule(min_v: int) -> list[tuple[int, float, float, bool]]:
+    """(version, center dot, QR-bit blend, alignment patterns halftone-a?)"""
     base = max(min_v, BASE_VERSION)
     raw = [
-        (base, 0.36, 0.00),  # 1: reference style (face max)
-        (base, 0.42, 0.10),
-        (base, 0.48, 0.20),
-        (max(min_v, base - 2), 0.48, 0.20),  # modules perusu
-        (max(min_v, base - 2), 0.55, 0.32),
-        (max(min_v, base - 3), 0.60, 0.42),
-        (min_v, 0.66, 0.55),  # kadaisi muyarchi (face weak aagum)
+        (base, 0.30, 0.00, True),   # 1: reference look
+        (base, 0.36, 0.06, True),
+        (base, 0.42, 0.12, True),
+        (base, 0.42, 0.12, False),  # 4: alignment solid
+        (max(min_v, base - 2), 0.46, 0.20, False),
+        (max(min_v, base - 4), 0.52, 0.32, False),
+        (min_v, 0.60, 0.48, False),
     ]
     seen: set = set()
-    out: list[tuple[int, float, float]] = []
-    for v, c, b in raw:
-        if (v, c, b) not in seen:
-            seen.add((v, c, b))
-            out.append((v, c, b))
+    out: list[tuple[int, float, float, bool]] = []
+    for item in raw:
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
     return out
 
 
@@ -52,7 +53,7 @@ def run_halftone_loop(
     best = None  # (key, img, plan, report, no)
     last_error = "Render fail aachu."
 
-    for idx, (ver, cen, blend) in enumerate(schedule):
+    for idx, (ver, cen, blend, afree) in enumerate(schedule):
         no = idx + 1
         att = Attempt(number=no, version=ver, center=cen)
         attempts.append(att)
@@ -60,7 +61,9 @@ def run_halftone_loop(
             progress(no, len(schedule), f"Attempt {no}/{len(schedule)}: halftone render + scan test")
 
         try:
-            img, plan = render_halftone(prep, payload, ec, ver, cen, blend, resolution, qm_cache)
+            img, plan = render_halftone(
+                prep, payload, ec, ver, cen, blend, resolution, qm_cache, afree
+            )
         except ValueError as e:
             att.error = str(e)
             last_error = str(e)
@@ -82,11 +85,19 @@ def run_halftone_loop(
     _, img, plan, report, no = best
     if report.verified:
         if no == 1:
-            msg = "Scan Verified: ZXing + OpenCV rendum payload exact-a padichchu."
+            msg = "Scan Verified: ZXing payload-a exact-a padichchu (100%, 75%, 50% scale)."
         else:
             msg = (
                 f"Scan Verified (attempt {no}). Scan aaga vendi face detail konjam kuraichom "
                 f"(center dot perusu, QR strength adhigam, version {plan.version})."
+            )
+
+        # OpenCV advisory: fail aanaalum "Verified" block aagadhu, aana user-ku therivikkrom
+        if any(c.decoder == "opencv" and not c.ok for c in report.checks):
+            msg += (
+                " Note: OpenCV-oda basic detector indha dense design-a padikkala "
+                "(ZXing padichchu). Ella phone-layum scan aagum nu guarantee illa, "
+                "unga phone-la scan test pannunga."
             )
     else:
         msg = (

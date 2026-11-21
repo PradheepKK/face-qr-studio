@@ -87,3 +87,17 @@ def build_matrix(payload: bytes, version: int, ec: str, mask: int) -> QrMatrix:
         dark=dark,
         function=function_mask(version),
     )
+def align_mask(version: int) -> np.ndarray:
+    """Alignment patterns mattum (finder, timing, format, version thavira)."""
+    n = qr_size(version)
+    m = np.zeros((n, n), dtype=bool)
+    pos = util.pattern_position(version)
+    for r in pos:
+        for c in pos:
+            if (r < 8 and c < 8) or (r < 8 and c >= n - 8) or (r >= n - 8 and c < 8):
+                continue
+            m[r - 2 : r + 3, c - 2 : c + 3] = True
+    # Timing line mela irukkura patterns-a thodaadhey
+    m[6, :] = False
+    m[:, 6] = False
+    return m

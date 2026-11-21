@@ -46,10 +46,10 @@ def plan_version(min_version: int, density: int) -> int:
 # ---------------------------------------------------------------
 # 1. Head crop (hair-um serthu)
 # ---------------------------------------------------------------
-def head_crop(bgr: np.ndarray, face: FaceResult):
+def head_crop(bgr: np.ndarray, face: FaceResult, scale: float = 2.1):
     h, w = bgr.shape[:2]
     x, y, bw, bh = face.bbox
-    side = max(64, int(round(2.1 * max(bw, bh))))
+    side = max(64, int(round(scale * max(bw, bh)))) 
     cx = x + bw / 2
     cy = y + bh / 2 - 0.14 * bh  # hair-ku mela konjam idam
 
