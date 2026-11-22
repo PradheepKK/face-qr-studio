@@ -1,35 +1,39 @@
-# Face model download script. Oru thadavai run pannina podhum.
-# Run: python scripts\download_models.py   (backend folder-la irundhu)
+# Models download script. Run: python scripts\download_models.py
 
 import sys
 import urllib.request
 from pathlib import Path
 
-# backend folder-a import path-la serkkrom (app.config edukka)
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.config import FACE_LANDMARKER_PATH, FACE_LANDMARKER_URL, MODELS_DIR
+from app.config import (
+    FACE_LANDMARKER_PATH,
+    FACE_LANDMARKER_URL,
+    MODELS_DIR,
+    SEG_MODEL_PATH,
+    SEG_MODEL_URL,
+)
+
+
+def fetch(url: str, path: Path) -> bool:
+    if path.exists() and path.stat().st_size > 100_000:
+        print(f"Already irukku: {path.name}")
+        return True
+    print(f"Download aagudhu: {url}")
+    try:
+        urllib.request.urlretrieve(url, path)
+    except Exception as e:
+        print(f"Download fail: {e}\nManual: browser-la {url} open pannitu {path} la vainga")
+        return False
+    print(f"Saved: {path.name} ({path.stat().st_size / 1024 / 1024:.1f} MB)")
+    return True
 
 
 def main() -> None:
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
-
-    if FACE_LANDMARKER_PATH.exists() and FACE_LANDMARKER_PATH.stat().st_size > 1_000_000:
-        print(f"Model already irukku: {FACE_LANDMARKER_PATH}")
-        return
-
-    print(f"Download aagudhu: {FACE_LANDMARKER_URL}")
-    try:
-        urllib.request.urlretrieve(FACE_LANDMARKER_URL, FACE_LANDMARKER_PATH)
-    except Exception as e:
-        print(f"Download fail: {e}")
-        print("Manual-a download panna: browser-la indha URL open pannunga:")
-        print(FACE_LANDMARKER_URL)
-        print(f"Download aana file-a inga vainga: {FACE_LANDMARKER_PATH}")
-        sys.exit(1)
-
-    size_mb = FACE_LANDMARKER_PATH.stat().st_size / (1024 * 1024)
-    print(f"Done. Saved: {FACE_LANDMARKER_PATH} ({size_mb:.1f} MB)")
+    ok1 = fetch(FACE_LANDMARKER_URL, FACE_LANDMARKER_PATH)
+    ok2 = fetch(SEG_MODEL_URL, SEG_MODEL_PATH)
+    sys.exit(0 if (ok1 and ok2) else 1)
 
 
 if __name__ == "__main__":

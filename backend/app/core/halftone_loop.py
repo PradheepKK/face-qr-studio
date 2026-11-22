@@ -11,20 +11,18 @@ from app.core.retry_loop import Attempt, LoopResult
 from app.core.validator import validate
 
 MAX_ATTEMPTS = 7
-BASE_VERSION = 12  # face detail-ku nalla balance
-
-
+BASE_VERSION = 10  # perusa modules = clear face (reference maari)
 def _schedule(min_v: int) -> list[tuple[int, float, float, bool]]:
     """(version, center dot, QR-bit blend, alignment patterns halftone-a?)"""
     base = max(min_v, BASE_VERSION)
     raw = [
-        (base, 0.30, 0.00, True),   # 1: reference look
-        (base, 0.36, 0.06, True),
-        (base, 0.42, 0.12, True),
-        (base, 0.42, 0.12, False),  # 4: alignment solid
-        (max(min_v, base - 2), 0.46, 0.20, False),
-        (max(min_v, base - 4), 0.52, 0.32, False),
-        (min_v, 0.60, 0.48, False),
+        (base, 0.34, 0.04, True),
+        (base, 0.40, 0.10, True),
+        (base, 0.46, 0.18, False),
+        (max(min_v, base - 2), 0.50, 0.24, False),
+        (max(min_v, base - 3), 0.56, 0.34, False),
+        (max(min_v, base - 4), 0.62, 0.44, False),
+        (min_v, 0.68, 0.56, False),
     ]
     seen: set = set()
     out: list[tuple[int, float, float, bool]] = []

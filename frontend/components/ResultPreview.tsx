@@ -49,13 +49,19 @@ export default function ResultPreview({
           <p className="mb-2 text-sm font-medium text-slate-500">After (Face QR)</p>
           <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white dark:bg-slate-800">
             {resultUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={resultUrl}
-                alt="Face QR"
-                className="h-full w-full object-contain"
-                style={{ imageRendering: "pixelated" }}
-              />
+              <a
+                href={resultUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block h-full w-full"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resultUrl}
+                  alt="Face QR"
+                  className="h-full w-full cursor-zoom-in object-contain"
+                />
+              </a>
             ) : (
               <div className="px-4 text-center text-slate-400">
                 <QrCode className="mx-auto mb-2 h-10 w-10" />
@@ -63,6 +69,11 @@ export default function ResultPreview({
               </div>
             )}
           </div>
+          {resultUrl && (
+            <p className="mt-2 text-xs text-slate-500">
+              Full-size paarka image mela click pannunga.
+            </p>
+          )}
         </div>
       </div>
 
@@ -116,7 +127,11 @@ export default function ResultPreview({
                 <span
                   key={`${c.decoder}-${c.variant}`}
                   className={`inline-flex items-center gap-1 ${
-                    c.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                    c.ok
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : c.required
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-slate-500"
                   }`}
                 >
                   {c.ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -125,7 +140,9 @@ export default function ResultPreview({
                 </span>
               ))}
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">* = required check</p>
+            <p className="mt-1 text-[11px] text-slate-500">
+              * = required check. Required illaadha fail (grey) = advisory mattum.
+            </p>
 
             <ul className="mt-3 space-y-1 text-xs text-slate-500">
               {meta.attempts.map((a) => (

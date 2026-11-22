@@ -46,12 +46,12 @@ def plan_version(min_version: int, density: int) -> int:
 # ---------------------------------------------------------------
 # 1. Head crop (hair-um serthu)
 # ---------------------------------------------------------------
-def head_crop(bgr: np.ndarray, face: FaceResult, scale: float = 2.1):
+def head_crop(bgr: np.ndarray, face: FaceResult, scale: float = 2.1, up: float = 0.26):
     h, w = bgr.shape[:2]
     x, y, bw, bh = face.bbox
     side = max(64, int(round(scale * max(bw, bh)))) 
     cx = x + bw / 2
-    cy = y + bh / 2 - 0.14 * bh  # hair-ku mela konjam idam
+    cy = y + bh / 2 - up * bh
 
     x0 = int(round(cx - side / 2))
     y0 = int(round(cy - side / 2))
@@ -70,7 +70,7 @@ def head_crop(bgr: np.ndarray, face: FaceResult, scale: float = 2.1):
 # ---------------------------------------------------------------
 # 2. Subject (head + hair) segmentation
 # ---------------------------------------------------------------
-def subject_mask(small: np.ndarray, oval: np.ndarray):
+def subject_mask(small: np.ndarray, oval: np.ndarray, torso: bool = False):
     size = small.shape[0]
     xs, ys = oval[:, 0], oval[:, 1]
     fw = float(xs.max() - xs.min())
@@ -80,7 +80,9 @@ def subject_mask(small: np.ndarray, oval: np.ndarray):
 
     # Fallback: head ellipse + face oval
     ell = np.zeros((size, size), np.uint8)
-    cv2.ellipse(ell, (int(ox), int(oy - 0.22 * fh)), (int(0.78 * fw), int(0.80 * fh)), 0, 0, 360, 255, -1)
+    cv2.ellipse(ell, (int(ox), int(oy - 0.32 * fh)), (int(0.98 * fw), int(1.08 * fh)), 0, 0, 360, 255, -1)
+    if torso:  # neck + shoulders
+     cv2.ellipse(ell, (int(ox), int(oy + 1.55 * fh)), (int(1.5 * fw), int(0.95 * fh)), 0, 0, 360, 255, -1)
     fallback = ell.copy()
     cv2.fillPoly(fallback, [oval], 255)
 
@@ -90,7 +92,8 @@ def subject_mask(small: np.ndarray, oval: np.ndarray):
         gc[ell > 0] = cv2.GC_PR_FGD
         b = max(4, int(size * 0.04))
         gc[:b, :] = cv2.GC_BGD
-        gc[-b:, :] = cv2.GC_BGD
+        if not torso:
+            gc[-b:, :] = cv2.GC_BGD
         gc[:, :b] = cv2.GC_BGD
         gc[:, -b:] = cv2.GC_BGD
 
@@ -122,7 +125,7 @@ def subject_mask(small: np.ndarray, oval: np.ndarray):
         fg = filled
 
         ratio = float(fg.mean()) / 255.0
-        if ratio < 0.08 or ratio > 0.85:
+        if ratio < 0.08 or ratio > 0.92:
             raise ValueError("segmentation reasonable illa")
     except Exception:
         fg = fallback
