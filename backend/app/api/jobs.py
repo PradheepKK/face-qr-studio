@@ -114,7 +114,7 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
 async def create_job(
     person: UploadFile = File(...),
     qr: UploadFile = File(...),
-    style: Literal["halftone", "pixel"] = Form("halftone"),
+    style: Literal["halftone"] = Form("halftone"),
     qr_color: str = Form("#000000"),
     bg_color: str = Form("#ffffff"),
     face_visibility: int = Form(70, ge=0, le=100),

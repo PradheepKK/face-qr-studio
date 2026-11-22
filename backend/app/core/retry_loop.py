@@ -91,6 +91,7 @@ def run_retry_loop(
             person, face, payload, ec, min_version, resolution,
             max_attempts=max_attempts, progress=progress,
         )
+   
     if style not in STYLE_PRESETS:
         raise ValueError(f"Theriyaadha style: {style}")
     check_colors(qr_color, bg_color)  # color thappa irundha udane error (retry-la fix aagaadhu)

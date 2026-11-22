@@ -22,10 +22,10 @@ WORK_HI = 512
 BORDER = 4
 BAND_ROWS = 6
 HT_THRESHOLD = 0.18  # subject coverage idha vida adhigam na halftone cell
-SKIN_LEVEL = 0.60  # kuraiya = lips/ear/skin dots theriyum
-CROP_SCALE = 2.0  # face perusa
-CROP_DOWN = 0.0  # hair top cut aagaadhu
-FEATURE_T = 0.33
+FEATURE_T = 0.33  # idha vida dark pixel = solid black
+SKIN_LEVEL = 0.60  # adhigam = skin light, dots chinna
+CROP_SCALE = 2.0  # head + shoulders (kuraiya = face perusa)
+CROP_DOWN = 0.0  # crop keezha pogum (0 = hair top cut aagaadhu)
 
 
 @dataclass
@@ -245,6 +245,7 @@ def prepare(bgr: np.ndarray, face: FaceResult) -> HalftonePrep:
     # Dark tones (hair, shirt) innum dark: reference maari solid blocks
     g = g * (1.0 - 0.6 * np.clip((0.5 - g) / 0.5, 0.0, 1.0))
 
+    
     tone = soft * g + (1.0 - soft) * 1.0
     return HalftonePrep(tone=tone.astype(np.float32), soft=soft.astype(np.float32), segmentation=seg)
 
