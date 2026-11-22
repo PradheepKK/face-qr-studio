@@ -261,6 +261,8 @@ export default function Home() {
         <section>
           <Step n={5} title="Download" />
           <DownloadPanel
+            onRegenerate={handleGenerate}
+            generating={generating}
             resultUrl={result?.url ?? null}
             resultResolution={result?.meta.resolution ?? null}
             validation={validation}

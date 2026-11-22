@@ -1,20 +1,21 @@
 "use client";
 
-import { Download, QrCode } from "lucide-react";
+import { Download, QrCode, RefreshCw, Loader2 } from "lucide-react";
 import { usePreviewUrl } from "@/lib/usePreviewUrl";
 import { RESOLUTIONS, type Resolution, type ValidationStatus } from "@/lib/types";
 import ValidationBadge from "./ValidationBadge";
 
 interface Props {
-  resultUrl: string | null; // generate aana Face QR image URL (Step 9-la varum)
+  resultUrl: string | null;
   resultResolution: number | null; // generate aana image-oda unmaiyaana resolution
   validation: ValidationStatus;
-  resolution: Resolution;
+  resolution: Resolution; // user select panna
   onResolutionChange: (r: Resolution) => void;
+  onRegenerate: () => void;
+  generating: boolean;
   qrFile: File | null;
 }
 
-// Blob download: URL-la irundhu file-a edutthu browser download trigger pannum
 function triggerDownload(href: string, filename: string) {
   const a = document.createElement("a");
   a.href = href;
@@ -30,20 +31,24 @@ export default function DownloadPanel({
   validation,
   resolution,
   onResolutionChange,
+  onRegenerate,
+  generating,
   qrFile,
 }: Props) {
   const qrUrl = usePreviewUrl(qrFile);
 
-  // Face QR PNG download (real blob download)
+  // Result resolution vera, select panna resolution vera na regenerate thevai
+  const mismatch = !!resultUrl && resultResolution !== null && resultResolution !== resolution;
+
   const downloadFaceQr = async () => {
     if (!resultUrl) return;
     const res = await fetch(resultUrl);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
-triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
-  // Original QR download: upload panna file-a appadiye thirumba kudukkum
   const downloadOriginalQr = () => {
     if (!qrUrl || !qrFile) return;
     triggerDownload(qrUrl, `original-${qrFile.name}`);
@@ -52,7 +57,7 @@ triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);    setT
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div>
-        <p className="mb-2 text-sm font-medium text-slate-500">HD download resolution</p>
+        <p className="mb-2 text-sm font-medium text-slate-500">HD resolution</p>
         <div className="flex flex-wrap gap-2">
           {RESOLUTIONS.map((r) => (
             <button
@@ -68,7 +73,32 @@ triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);    setT
             </button>
           ))}
         </div>
+        {resultResolution && (
+          <p className="mt-2 text-xs text-slate-500">
+            Ippo irukkura Face QR: {resultResolution}px
+          </p>
+        )}
       </div>
+
+      {mismatch && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+          <span>
+            {resolution}px venum-na thirumba generate pannanum (scan verify-um thirumba nadakkum).
+          </span>
+          <button
+            onClick={onRegenerate}
+            disabled={generating}
+            className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-1.5 text-white hover:bg-amber-700 disabled:opacity-50"
+          >
+            {generating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Regenerate at {resolution}px
+          </button>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <button
@@ -78,7 +108,6 @@ triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);    setT
         >
           <Download className="h-4 w-4" /> Download Face QR (PNG)
         </button>
-
         <ValidationBadge status={validation} />
       </div>
 
@@ -94,8 +123,8 @@ triggerDownload(url, `face-qr-${resultResolution ?? resolution}px.png`);    setT
 
       {!resultUrl && (
         <p className="text-xs text-slate-500">
-          Face QR download, generate aana piragu dhaan enable aagum. Original QR
-          download, QR upload pannina udane work aagum.
+          Face QR download, generate aana piragu enable aagum. Original QR download, QR upload
+          pannina udane work aagum.
         </p>
       )}
     </div>
