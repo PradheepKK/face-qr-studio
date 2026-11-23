@@ -11,7 +11,7 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
+import SiteHeader from "@/components/SiteHeader";
 import UploadCard from "@/components/UploadCard";
 import StyleOptions from "@/components/StyleOptions";
 import ResultPreview from "@/components/ResultPreview";
@@ -84,7 +84,7 @@ export default function Home() {
     setResult(null);
   };
 
-  // Puthu file select panna, pazhaya result paathu confuse aagaama clear pannrom
+  // Puthu file select panna, pazhaya result clear pannrom
   const onPersonChange = (f: File | null) => {
     setPerson(f);
     clearResult();
@@ -141,19 +141,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2 font-bold">
-            <ScanFace className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-            Face QR Studio
-          </div>
-          <ThemeToggle />
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="mx-auto max-w-5xl space-y-12 px-4 py-10">
-        {/* 1. Hero */}
+        {/* Hero */}
         <section className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
             Turn Your Face Into a{" "}
@@ -171,7 +162,7 @@ export default function Home() {
           </p>
         </section>
 
-        {/* 2 + 3. Uploads */}
+        {/* Uploads */}
         <section>
           <Step n={1} title="Photo & Payment QR upload" />
           <div className="grid gap-5 md:grid-cols-2">
@@ -196,13 +187,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. Style customization */}
+        {/* Style */}
         <section>
           <Step n={2} title="Style customization" />
           <StyleOptions settings={settings} onChange={setSettings} />
         </section>
 
-        {/* 5. Generate */}
+        {/* Generate */}
         <section>
           <Step n={3} title="Generate" />
           <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -244,7 +235,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 6 + 7. Before/After + Validation */}
+        {/* Before/After + Validation */}
         <section>
           <Step n={4} title="Preview & validation" />
           <ResultPreview
@@ -257,7 +248,7 @@ export default function Home() {
           />
         </section>
 
-        {/* 8. Downloads */}
+        {/* Downloads */}
         <section>
           <Step n={5} title="Download" />
           <DownloadPanel

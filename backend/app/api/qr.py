@@ -10,6 +10,12 @@ from app.schemas.models import DecoderStatus, QrDecodeResponse, UpiInfo
 from app.utils.file_validation import read_validated_image
 from app.utils.image_io import decode_image_bgr
 
+from fastapi.responses import Response
+
+from app.core.url_qr import make_url_qr, validate_url, verify
+from app.schemas.models import UrlQrRequest
+from app.utils.image_io import encode_png
+
 router = APIRouter(prefix="/api/qr", tags=["qr"])
 
 
@@ -53,4 +59,31 @@ async def decode(file: UploadFile = File(...)):
         image_height=r.img_h,
         upi=upi,
         warnings=r.warnings,
+    )
+
+    
+
+ALLOWED_SIZES = (512, 1024, 2048)
+@router.post("/generate")
+async def generate_url_qr(body: UrlQrRequest):
+    if body.size not in ALLOWED_SIZES:
+        raise HTTPException(status_code=400, detail=f"Size {ALLOWED_SIZES}-la onnu irukkanum.")
+    try:
+        url = validate_url(body.url)
+        img, info = await run_in_threadpool(make_url_qr, url, body.size)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    verified = await run_in_threadpool(verify, img, url)
+    png = encode_png(img)
+    return Response(
+        content=png,
+        media_type="image/png",
+        headers={
+            "Cache-Control": "no-store",
+            "X-QR-Verified": "verified" if verified else "failed",
+            "X-QR-Version": str(info["version"]),
+            "X-QR-Modules": str(info["modules"]),
+            "X-QR-EC-Level": info["ec_level"],
+        },
     )

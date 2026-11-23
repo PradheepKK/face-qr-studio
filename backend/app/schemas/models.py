@@ -1,3 +1,4 @@
+
 # API response formats (Pydantic).
 
 from pydantic import BaseModel
@@ -13,11 +14,11 @@ class BBox(BaseModel):
 class FaceDetectResponse(BaseModel):
     ok: bool
     face_count: int
-    image_width: int  # processing-ku use panna image size
+    image_width: int
     image_height: int
-    downscaled: bool  # periya image-a kuraichomaa
+    downscaled: bool
     bbox: BBox
-    face_area_ratio: float  # face, image-la evvalavu % (0-1)
+    face_area_ratio: float
     landmark_count: int
     sharpness: float
     brightness: float
@@ -35,19 +36,19 @@ class UpiInfo(BaseModel):
 class DecoderStatus(BaseModel):
     zxing: bool
     opencv: bool
-    agree: bool  # rendum same payload-a kodutthucha
+    agree: bool
 
 
 class QrDecodeResponse(BaseModel):
     ok: bool
-    payload_type: str  # upi / url / text / binary
-    payload_length: int  # bytes
-    payload_preview: str  # first 10 chars mattum (masked)
-    payload_sha256: str  # exact compare-kaga hash
+    payload_type: str
+    payload_length: int
+    payload_preview: str
+    payload_sha256: str
     decoders: DecoderStatus
     qr_count: int
     original_ec_level: str | None
-    best_ec_level: str | None  # payload-ku fit aagura highest level
+    best_ec_level: str | None
     level_h_possible: bool
     qr_version: int | None
     module_count: int | None
@@ -55,3 +56,9 @@ class QrDecodeResponse(BaseModel):
     image_height: int
     upi: UpiInfo | None
     warnings: list[str]
+
+
+# URL QR generation request
+class UrlQrRequest(BaseModel):
+    url: str
+    size: int = 1024  # 512 / 1024 / 2048
