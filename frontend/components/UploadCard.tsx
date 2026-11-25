@@ -29,7 +29,6 @@ export default function UploadCard({
   const [error, setError] = useState<string | null>(null);
   const previewUrl = usePreviewUrl(file);
 
-  // File select aanadhum type + size validate pannrom
   const handleFile = (f: File | undefined | null) => {
     if (!f) return;
     const problem = validateImage(f, allowedTypes, maxMB);
@@ -54,37 +53,40 @@ export default function UploadCard({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="mb-4 flex items-center gap-2">
-        <span className="text-indigo-600 dark:text-indigo-400">{icon}</span>
+    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
+          {icon}
+        </span>
         <h3 className="font-semibold">{title}</h3>
       </div>
 
       {previewUrl && file ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-center rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="flex flex-1 items-center justify-center rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
               alt={`${title} preview`}
-              className="max-h-64 rounded-lg object-contain"
+              className="max-h-64 w-full rounded-lg object-contain"
             />
           </div>
           <div className="flex items-center justify-between gap-2 text-sm">
             <span className="flex min-w-0 items-center gap-2 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
               <span className="truncate">{file.name}</span>
+              <span className="shrink-0 text-xs text-slate-500">
+                {(file.size / 1024).toFixed(0)} KB
+              </span>
             </span>
             <button
+              type="button"
               onClick={remove}
-              className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800"
+              className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-lg px-3 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
             >
               <X className="h-4 w-4" /> Remove
             </button>
           </div>
-          <p className="text-xs text-slate-500">
-            {(file.size / 1024).toFixed(0)} KB
-          </p>
         </div>
       ) : (
         <div
@@ -100,15 +102,18 @@ export default function UploadCard({
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
           }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-10 text-center transition ${
+          className={`flex min-h-52 flex-1 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-8 text-center transition ${
             dragging
               ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40"
               : "border-slate-300 hover:border-indigo-400 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800/50"
           }`}
         >
-          <UploadCloud className="mb-3 h-10 w-10 text-slate-400" />
+          <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-950/60">
+            <UploadCloud className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+          </span>
           <p className="text-sm font-medium">
-            Drag & drop pannunga, allathu click pannunga
+            <span className="hidden sm:inline">Drag & drop pannunga, allathu </span>
+            <span className="text-indigo-600 dark:text-indigo-400">click / tap pannunga</span>
           </p>
           <p className="mt-1 text-xs text-slate-500">{hint}</p>
         </div>

@@ -10,7 +10,7 @@ interface Props {
   personFile: File | null;
   resultUrl: string | null;
   validation: ValidationStatus;
-  progress: number | null; // null = generate nadakkala
+  progress: number | null;
   progressMessage: string;
   meta: JobResultMeta | null;
 }
@@ -26,11 +26,11 @@ export default function ResultPreview({
   const beforeUrl = usePreviewUrl(personFile);
 
   return (
-    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="grid gap-4 md:grid-cols-2">
+    <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
         {/* Before */}
         <div>
-          <p className="mb-2 text-sm font-medium text-slate-500">Before (original photo)</p>
+          <p className="mb-2 text-sm font-medium text-slate-500">Before (original)</p>
           <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800">
             {beforeUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -47,14 +47,9 @@ export default function ResultPreview({
         {/* After */}
         <div>
           <p className="mb-2 text-sm font-medium text-slate-500">After (Face QR)</p>
-          <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white dark:bg-slate-800">
+          <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-slate-200 dark:ring-slate-700">
             {resultUrl ? (
-              <a
-                href={resultUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="block h-full w-full"
-              >
+              <a href={resultUrl} target="_blank" rel="noreferrer" className="block h-full w-full">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={resultUrl}
@@ -70,38 +65,34 @@ export default function ResultPreview({
             )}
           </div>
           {resultUrl && (
-            <p className="mt-2 text-xs text-slate-500">
-              Full-size paarka image mela click pannunga.
-            </p>
+            <p className="mt-2 text-xs text-slate-500">Full-size paarka image mela tap pannunga.</p>
           )}
         </div>
       </div>
 
-      {/* Real progress bar */}
       {progress !== null && (
-        <div>
-          <div className="mb-1 flex items-center justify-between text-sm">
-            <span className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-              {progressMessage}
+        <div className="rounded-xl bg-indigo-50 p-4 dark:bg-indigo-950/30">
+          <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+            <span className="flex min-w-0 items-center gap-2">
+              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-indigo-600" />
+              <span className="truncate">{progressMessage}</span>
             </span>
-            <span>{progress}%</span>
+            <span className="font-semibold">{progress}%</span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-indigo-100 dark:bg-slate-700">
             <div
-              className="h-full rounded-full bg-indigo-600 transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500 transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-medium text-slate-500">QR Validation:</span>
         <ValidationBadge status={validation} />
       </div>
 
-      {/* Real validation details (backend-la irundhu) */}
       {meta && (
         <div className="space-y-2 text-sm">
           <p
@@ -117,12 +108,12 @@ export default function ResultPreview({
             {meta.summary} · QR version {meta.qr_version} · Level {meta.ec_level} · mask {meta.mask}
           </p>
 
-          <details className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+          <details className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
             <summary className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">
               Scan test details
             </summary>
 
-            <div className="mt-3 grid grid-cols-2 gap-1 text-xs sm:grid-cols-4">
+            <div className="mt-3 grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4">
               {meta.checks.map((c) => (
                 <span
                   key={`${c.decoder}-${c.variant}`}
@@ -141,7 +132,7 @@ export default function ResultPreview({
               ))}
             </div>
             <p className="mt-1 text-[11px] text-slate-500">
-              * = required check. Required illaadha fail (grey) = advisory mattum.
+              * = required check. Grey fail = advisory mattum.
             </p>
 
             <ul className="mt-3 space-y-1 text-xs text-slate-500">

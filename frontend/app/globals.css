@@ -1,15 +1,12 @@
 @import "tailwindcss";
 
-/* Dark mode: html tag-la "dark" class irundha dark: classes work aagum */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Light theme colors */
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #0f172a;
 }
 
-/* Dark theme colors */
 .dark {
   --background: #0b0f19;
   --foreground: #e5e7eb;
@@ -21,12 +18,33 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hero background glow */
+.hero-glow {
+  background:
+    radial-gradient(60% 50% at 20% 0%, rgba(99, 102, 241, 0.18), transparent 70%),
+    radial-gradient(50% 45% at 85% 10%, rgba(139, 92, 246, 0.16), transparent 70%);
+}
+.dark .hero-glow {
+  background:
+    radial-gradient(60% 50% at 20% 0%, rgba(99, 102, 241, 0.28), transparent 70%),
+    radial-gradient(50% 45% at 85% 10%, rgba(139, 92, 246, 0.22), transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

@@ -7,9 +7,9 @@ import ValidationBadge from "./ValidationBadge";
 
 interface Props {
   resultUrl: string | null;
-  resultResolution: number | null; // generate aana image-oda unmaiyaana resolution
+  resultResolution: number | null;
   validation: ValidationStatus;
-  resolution: Resolution; // user select panna
+  resolution: Resolution;
   onResolutionChange: (r: Resolution) => void;
   onRegenerate: () => void;
   generating: boolean;
@@ -36,8 +36,6 @@ export default function DownloadPanel({
   qrFile,
 }: Props) {
   const qrUrl = usePreviewUrl(qrFile);
-
-  // Result resolution vera, select panna resolution vera na regenerate thevai
   const mismatch = !!resultUrl && resultResolution !== null && resultResolution !== resolution;
 
   const downloadFaceQr = async () => {
@@ -55,17 +53,18 @@ export default function DownloadPanel({
   };
 
   return (
-    <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
       <div>
         <p className="mb-2 text-sm font-medium text-slate-500">HD resolution</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:flex">
           {RESOLUTIONS.map((r) => (
             <button
               key={r}
+              type="button"
               onClick={() => onResolutionChange(r)}
-              className={`rounded-lg border px-4 py-2 text-sm transition ${
+              className={`min-h-11 rounded-xl border px-4 text-sm font-medium transition ${
                 resolution === r
-                  ? "border-indigo-600 bg-indigo-600 text-white"
+                  ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
                   : "border-slate-200 hover:border-indigo-300 dark:border-slate-700"
               }`}
             >
@@ -81,14 +80,15 @@ export default function DownloadPanel({
       </div>
 
       {mismatch && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          <span>
+        <div className="flex flex-col gap-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-800 sm:flex-row sm:items-center dark:bg-amber-950/40 dark:text-amber-300">
+          <span className="flex-1">
             {resolution}px venum-na thirumba generate pannanum (scan verify-um thirumba nadakkum).
           </span>
           <button
+            type="button"
             onClick={onRegenerate}
             disabled={generating}
-            className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-1.5 text-white hover:bg-amber-700 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 text-white hover:bg-amber-700 disabled:opacity-50"
           >
             {generating ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -100,26 +100,26 @@ export default function DownloadPanel({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <button
+          type="button"
           onClick={downloadFaceQr}
           disabled={!resultUrl}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Download className="h-4 w-4" /> Download Face QR (PNG)
         </button>
         <ValidationBadge status={validation} />
       </div>
 
-      <div>
-        <button
-          onClick={downloadOriginalQr}
-          disabled={!qrFile}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-800"
-        >
-          <QrCode className="h-4 w-4" /> Download Original QR
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={downloadOriginalQr}
+        disabled={!qrFile}
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-300 px-6 text-sm font-medium transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto dark:border-slate-700 dark:hover:bg-slate-800"
+      >
+        <QrCode className="h-4 w-4" /> Download Original QR
+      </button>
 
       {!resultUrl && (
         <p className="text-xs text-slate-500">
