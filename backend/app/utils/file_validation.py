@@ -23,7 +23,7 @@ async def read_validated_image(
     """Validate pannitu file bytes-a memory-la return pannum. Disk-la save aagaadhu."""
     if file.content_type not in allowed_types:
         names = ", ".join(sorted(t.split("/")[1].upper() for t in allowed_types))
-        raise HTTPException(status_code=415, detail=f"Support aagadha file type. Allowed: {names}")
+        raise HTTPException(status_code=415, detail=f"Unsupported file type. Allowed: {names}")
 
     max_bytes = max_mb * 1024 * 1024
     buffer = bytearray()
@@ -34,16 +34,16 @@ async def read_validated_image(
         buffer.extend(chunk)
         # Periya file-na ulla padikkaama udane niruthirom
         if len(buffer) > max_bytes:
-            raise HTTPException(status_code=413, detail=f"File romba periyadhu. Max size {max_mb} MB.")
+            raise HTTPException(status_code=413, detail=f"File is too large. Max size {max_mb} MB.")
 
     if len(buffer) == 0:
-        raise HTTPException(status_code=400, detail="File empty-a irukku.")
+        raise HTTPException(status_code=400, detail="The file is empty.")
 
     real_type = _sniff_type(bytes(buffer[:16]))
     if real_type is None or real_type not in allowed_types:
         raise HTTPException(
             status_code=415,
-            detail="Idhu unmaiyaana image file illa (file content, type-oda match aagala).",
+            detail="This is not a valid image file.",
         )
 
     return bytes(buffer)

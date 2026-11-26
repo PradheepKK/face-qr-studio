@@ -79,7 +79,7 @@ async function request(url: string, init?: RequestInit): Promise<Response> {
   } catch (e) {
     if (e instanceof TypeError) {
       throw new ApiError(
-        "Backend-a connect panna mudiyala. Backend server (port 8000) run aagudha nu paarunga.",
+        "Cannot reach the server. Please try again in a moment.",
         0
       );
     }
@@ -151,7 +151,7 @@ export async function runGeneration(
     } catch (e) {
       if (signal.aborted) throw e;
       if (e instanceof ApiError && e.status === 404) {
-        throw new ApiError("Job expire aagiduchu. Thirumba Generate pannunga.", 404);
+        throw new ApiError("This request expired. Please generate again.", 404);
       }
       failures += 1; // oru rendu thadavai network hiccup-na wait pannrom
       if (failures >= 5) throw e;
@@ -161,7 +161,7 @@ export async function runGeneration(
     onProgress(st.progress, st.message);
 
     if (st.state === "error") {
-      throw new ApiError(st.error ?? "Generate fail aachu.", st.error_status ?? 500);
+      throw new ApiError(st.error ?? "Generation failed.", st.error_status ?? 500);
     }
     if (st.state === "done" && st.result) {
       const blob = await fetchResult(jobId, signal);

@@ -67,7 +67,7 @@ ALLOWED_SIZES = (512, 1024, 2048)
 @router.post("/generate")
 async def generate_url_qr(body: UrlQrRequest):
     if body.size not in ALLOWED_SIZES:
-        raise HTTPException(status_code=400, detail=f"Size {ALLOWED_SIZES}-la onnu irukkanum.")
+        raise HTTPException(status_code=400, detail=f"Size {ALLOWED_SIZES} Invalid size.")
     try:
         url = validate_url(body.url)
         img, info = await run_in_threadpool(make_url_qr, url, body.size)

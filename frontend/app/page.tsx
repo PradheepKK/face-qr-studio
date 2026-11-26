@@ -24,7 +24,6 @@ import { runGeneration, type JobResultMeta } from "@/lib/api";
 import { PERSON_TYPES, QR_TYPES } from "@/lib/validate";
 import { DEFAULT_SETTINGS, type Settings, type ValidationStatus } from "@/lib/types";
 
-// Section heading (number + title + subtitle)
 function Step({ n, title, subtitle }: { n: number; title: string; subtitle?: string }) {
   return (
     <div className="mb-5 flex items-start gap-3">
@@ -118,7 +117,7 @@ export default function Home() {
     clearResult();
     setError(null);
     setProgress(0);
-    setProgressMsg("Start aagudhu...");
+    setProgressMsg("Starting...");
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -140,7 +139,7 @@ export default function Home() {
       setResult({ url, meta, settings: used });
     } catch (e) {
       if (ctrl.signal.aborted) return;
-      setError(e instanceof Error ? e.message : "Theriyaadha error nadandhuduchu.");
+      setError(e instanceof Error ? e.message : "Something went wrong. Please try again.");
     } finally {
       setProgress(null);
     }
@@ -162,7 +161,7 @@ export default function Home() {
       <section className="hero-glow">
         <div className="mx-auto max-w-4xl px-4 pb-10 pt-12 text-center sm:px-6 sm:pb-14 sm:pt-20">
           <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1 text-xs font-medium text-indigo-700 backdrop-blur dark:border-indigo-900 dark:bg-slate-900/60 dark:text-indigo-300">
-            <Sparkles className="h-3.5 w-3.5" /> Face QR · Real scan verification
+            <Sparkles className="h-3.5 w-3.5" /> Face QR · Scan verified
           </span>
           <h1 className="mt-5 text-3xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
             Turn Your Face Into a{" "}
@@ -171,8 +170,8 @@ export default function Home() {
             </span>
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 sm:text-lg dark:text-slate-400">
-            Un photo + payment QR upload pannunga. Face, QR modules-aale form aagum.
-            Thooraththula paartha face theriyum, scan pannina payment QR work aagum.
+            Upload your photo and a payment QR. Your face is built from the QR modules
+            themselves: it looks like you from a distance and still scans to your payment.
           </p>
 
           <div className="mt-7 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
@@ -183,36 +182,34 @@ export default function Home() {
               <Sparkles className="h-4 w-4" /> Start creating
             </a>
             <span className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <ShieldCheck className="h-4 w-4" /> Photos store aagaadhu
+              <ShieldCheck className="h-4 w-4" /> Your photos are never stored
             </span>
           </div>
         </div>
       </section>
 
       <main className="mx-auto max-w-6xl space-y-14 px-4 pb-16 sm:space-y-16 sm:px-6">
-        {/* How it works */}
         <section className="grid gap-4 sm:grid-cols-3">
           <Feature
             icon={<UploadCloud className="h-5 w-5" />}
             title="1. Upload"
-            text="Un portrait photo + payment QR (GPay, PhonePe, Paytm, edhuvum)."
+            text="Your portrait photo and a payment QR (GPay, PhonePe, Paytm or any QR)."
           />
           <Feature
             icon={<BadgeCheck className="h-5 w-5" />}
-            title="2. Generate + Verify"
-            text="Face QR generate aagi, ZXing-la real-a scan test aagum."
+            title="2. Generate"
+            text="Your Face QR is created and checked to make sure it scans."
           />
           <Feature
             icon={<Download className="h-5 w-5" />}
-            title="3. Download HD"
-            text="1024 / 2048 / 4096px PNG download pannunga."
+            title="3. Download"
+            text="Get a high-resolution PNG in 1024, 2048 or 4096 px."
           />
         </section>
 
         <div id="create" className="scroll-mt-24 space-y-14 sm:space-y-16">
-          {/* Uploads */}
           <section>
-            <Step n={1} title="Upload" subtitle="Rendu images-um venum." />
+            <Step n={1} title="Upload" subtitle="Both images are required." />
             <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               <UploadCard
                 title="Person photo"
@@ -235,19 +232,17 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Style */}
           <section>
-            <Step n={2} title="Style" subtitle="Un Face QR indha maari irukkum." />
+            <Step n={2} title="Style" subtitle="Your Face QR will look like this." />
             <StyleOptions settings={settings} onChange={setSettings} />
           </section>
 
-          {/* Generate */}
           <section>
             <Step n={3} title="Generate" />
             <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900">
               <ul className="space-y-2">
-                <CheckItem ok={!!person} text="Person photo upload aachu" />
-                <CheckItem ok={!!qr} text="Payment QR upload aachu" />
+                <CheckItem ok={!!person} text="Person photo uploaded" />
+                <CheckItem ok={!!qr} text="Payment QR uploaded" />
               </ul>
 
               <button
@@ -261,12 +256,10 @@ export default function Home() {
                 ) : (
                   <Sparkles className="h-4 w-4" />
                 )}
-                {generating ? "Generate aagudhu..." : "Generate Face QR"}
+                {generating ? "Generating..." : "Generate Face QR"}
               </button>
 
-              {!ready && (
-                <p className="text-xs text-slate-500">Mudhalla rendu images-um upload pannunga.</p>
-              )}
+              {!ready && <p className="text-xs text-slate-500">Please upload both images first.</p>}
 
               {error && (
                 <p className="flex items-start gap-2 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
@@ -277,16 +270,15 @@ export default function Home() {
 
               {stale && (
                 <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                  Settings maathitinga. Kaattara image pazhaya settings-oda irukku. Puthusa paarka
-                  thirumba Generate pannunga.
+                  You changed the settings. The image shown uses the old settings. Generate again
+                  to update it.
                 </p>
               )}
             </div>
           </section>
 
-          {/* Preview */}
           <section>
-            <Step n={4} title="Preview & validation" />
+            <Step n={4} title="Preview" />
             <ResultPreview
               personFile={person}
               resultUrl={result?.url ?? null}
@@ -297,7 +289,6 @@ export default function Home() {
             />
           </section>
 
-          {/* Download */}
           <section>
             <Step n={5} title="Download" />
             <DownloadPanel

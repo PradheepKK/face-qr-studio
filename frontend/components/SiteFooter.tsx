@@ -21,7 +21,7 @@ export default function SiteFooter() {
 
         <p className="flex items-center gap-1.5 text-center">
           <ShieldCheck className="h-4 w-4 text-emerald-500" />
-          Photos store aagaadhu. Memory-la mattum process.
+          Photos are never stored.
         </p>
       </div>
     </footer>

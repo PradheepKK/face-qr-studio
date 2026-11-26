@@ -193,8 +193,7 @@ def decode_qr(bgr: np.ndarray) -> QrResult:
 
     if not zx_results and cv_text is None:
         raise NoQrError(
-            "QR code padikka mudiyala. QR clear-a, muzhusa theriyara image upload pannunga "
-            "(blur illama, QR-a suththi konjam veliya idam vittu)."
+            "Could not read the QR code. Please upload a clear image showing the whole QR with some empty margin around it."
         )
 
     warnings: list[str] = []

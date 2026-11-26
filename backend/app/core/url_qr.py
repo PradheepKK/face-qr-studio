@@ -15,14 +15,14 @@ BORDER = 4  # quiet zone (modules)
 def validate_url(raw: str) -> str:
     url = raw.strip()
     if not url:
-        raise ValueError("URL type pannunga.")
+        raise ValueError("Please enter a URL.")
     if len(url) > MAX_URL_LEN:
-        raise ValueError(f"URL romba neelam (max {MAX_URL_LEN} characters).")
+        raise ValueError(f"The URL is too long (max {MAX_URL_LEN} characters).")
     if any(c.isspace() for c in url):
-        raise ValueError("URL-la space irukka koodadhu.")
+        raise ValueError("The URL cannot contain spaces.")
     p = urlparse(url)
     if p.scheme not in ("http", "https") or not p.netloc:
-        raise ValueError("URL http:// allathu https:// oda aarambikkanum. Example: https://example.com")
+        raise ValueError("The URL must start with http:// or https://, e.g. https://example.com")
     return url
 
 
@@ -37,7 +37,7 @@ def make_url_qr(url: str, size: int) -> tuple[np.ndarray, dict]:
     try:
         qr.make(fit=True)
     except (DataOverflowError, ValueError):
-        raise ValueError("URL QR-la fit aagala. Short URL use pannunga.")
+        raise ValueError("The URL is too long for a QR code. Please use a shorter link.")
 
     modules = np.array(qr.modules, dtype=bool)
     n = modules.shape[0]

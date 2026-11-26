@@ -40,17 +40,17 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
     store.update(job_id, message="Queue-la wait pannrom...")
     with _slots:
         try:
-            store.update(job_id, state="running", progress=5, message="Photo padikkrom...")
+            store.update(job_id, state="running", progress=5, message="Reading your photo...")
             person_bgr, _ = decode_image_bgr(person_bytes, max_side=MAX_IMAGE_SIDE)
 
-            store.update(job_id, progress=12, message="Face detect pannrom (MediaPipe)...")
+            store.update(job_id, progress=12, message="Detecting your face...")
             face = detect_face(person_bgr)
 
-            store.update(job_id, progress=22, message="Payment QR decode pannrom...")
+            store.update(job_id, progress=22, message="Reading the payment QR...")
             qr_bgr, _ = decode_image_bgr(qr_bytes, max_side=MAX_IMAGE_SIDE)
             qr = decode_qr(qr_bgr)
             if qr.best_ec_level is None:
-                raise ValueError("QR payload romba periyadhu, face QR-ku fit aagala.")
+                raise ValueError("This QR contains too much data to build a Face QR.")
 
             def on_progress(no: int, total: int, msg: str) -> None:
                 pct = 25 + int((no - 1) / max(1, total) * 70)
@@ -72,7 +72,7 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
                 progress=on_progress,
             )
 
-            store.update(job_id, progress=97, message="PNG ready pannrom...")
+            store.update(job_id, progress=97, message="Preparing your image...")
             png = encode_png(res.image)
             plan = res.plan
             meta = {
@@ -92,7 +92,7 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
                 "segmentation": plan.segmentation,
                 "resolution": p["resolution"],
             }
-            store.update(job_id, state="done", progress=100, message="Mudinjidhu", meta=meta, png=png)
+            store.update(job_id, state="done", progress=100, message="Finishing up", meta=meta, png=png)
 
         except (NoFaceError, NoQrError) as e:
             store.update(job_id, state="error", error=str(e), error_status=422)
@@ -105,7 +105,7 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
             store.update(
                 job_id,
                 state="error",
-                error="Server-la edho thappu nadandhuduchu. Thirumba try pannunga.",
+                error="Something went wrong on the server. Please try again.",
                 error_status=500,
             )
 
@@ -125,7 +125,7 @@ async def create_job(
     if style not in BUILT_STYLES:
         raise HTTPException(
             status_code=501,
-            detail="Indha style-oda renderer innum ready aagala. Next step-la build pannuvom.",
+            detail="This style is not available yet.",
         )
     try:
         check_colors(qr_color, bg_color)  # thappu color-na udane error
@@ -138,7 +138,7 @@ async def create_job(
     try:
         job_id = store.create()
     except TooManyJobsError:
-        raise HTTPException(status_code=429, detail="Server romba busy. Konjam neram kazhichu try pannunga.")
+        raise HTTPException(status_code=429, detail=" The server is busy. Please try again shortly.")
 
     params = dict(
         style=style,
@@ -157,7 +157,7 @@ async def create_job(
 def job_status(job_id: str):
     job = store.snapshot(job_id)
     if job is None:
-        raise HTTPException(status_code=404, detail="Job kidaikkala (expire aagirukkalam).")
+        raise HTTPException(status_code=404, detail="Request not found (it may have expired).")
     return JobStatus(
         job_id=job.id,
         state=job.state,
@@ -175,9 +175,9 @@ def job_status(job_id: str):
 def job_result(job_id: str):
     job = store.snapshot(job_id)
     if job is None:
-        raise HTTPException(status_code=404, detail="Job kidaikkala (expire aagirukkalam allathu already download aachu).")
+        raise HTTPException(status_code=404, detail="Request not found (it may have expired).")
     if job.state != "done":
-        raise HTTPException(status_code=409, detail="Result innum ready illa.")
+        raise HTTPException(status_code=409, detail="The result is not ready yet.")
     png = store.pop_result(job_id)
     if png is None:
         raise HTTPException(status_code=404, detail="Result already download aachu.")

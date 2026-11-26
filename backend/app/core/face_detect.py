@@ -52,7 +52,7 @@ def _get_landmarker():
     if _landmarker is None:
         if not FACE_LANDMARKER_PATH.exists():
             raise ModelMissingError(
-                "Face model illa. Backend folder-la run pannunga: python scripts\\download_models.py"
+                "Face model is missing on the server. python scripts\\download_models.py"
             )
         options = vision.FaceLandmarkerOptions(
             base_options=mp_python.BaseOptions(model_asset_path=str(FACE_LANDMARKER_PATH)),
@@ -77,7 +77,7 @@ def detect_face(bgr: np.ndarray) -> FaceResult:
 
     faces = result.face_landmarks
     if not faces:
-        raise NoFaceError("Photo-la face theriyala. Munnadi paartha, nalla light-la irukkura photo upload pannunga.")
+        raise NoFaceError("No face found in the photo. Please upload a clear, front-facing photo with good lighting.")
 
     # Pala face irundha, perusa irukkura face-a edukkrom
     best_pts = None

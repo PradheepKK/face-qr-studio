@@ -269,7 +269,7 @@ def render_halftone(
     s = resolution // total
     if s < 8:
         raise ValueError(
-            "Payload neelam, indha resolution-la modules romba chinna aagudhu. Perusa resolution select pannunga."
+            "This QR holds a lot of data. Please choose a higher resolution."
         )
 
     tone_mod = cv2.resize(prep.tone, (n, n), interpolation=cv2.INTER_AREA)

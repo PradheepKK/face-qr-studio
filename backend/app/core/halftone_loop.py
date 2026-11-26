@@ -56,7 +56,7 @@ def run_halftone_loop(
         att = Attempt(number=no, version=ver, center=cen)
         attempts.append(att)
         if progress:
-            progress(no, len(schedule), f"Attempt {no}/{len(schedule)}: halftone render + scan test")
+            progress(no, len(schedule), f"Creating your Face QR ({no}/{len(schedule)})...")
 
         try:
             img, plan = render_halftone(
@@ -83,25 +83,23 @@ def run_halftone_loop(
     _, img, plan, report, no = best
     if report.verified:
         if no == 1:
-            msg = "Scan Verified: ZXing payload-a exact-a padichchu (100%, 75%, 50% scale)."
+            msg = "Scan Verified"
         else:
             msg = (
-                f"Scan Verified (attempt {no}). Scan aaga vendi face detail konjam kuraichom "
-                f"(center dot perusu, QR strength adhigam, version {plan.version})."
+                f"Scan Verified (attempt ). We slightly reduced facial details to ensure better scanning reliability. "
+                f"(Larger center dot, stronger QR pattern, version {plan.version})."
             )
 
         # OpenCV advisory: fail aanaalum "Verified" block aagadhu, aana user-ku therivikkrom
         if any(c.decoder == "opencv" and not c.ok for c in report.checks):
             msg += (
-                " Note: OpenCV-oda basic detector indha dense design-a padikkala "
-                "(ZXing padichchu). Ella phone-layum scan aagum nu guarantee illa, "
-                "unga phone-la scan test pannunga."
+                "Note: OpenCV's basic detector cannot read this dense design (ZXing can). Scanning is not guaranteed to work on all phones. Please test it with your own phone."
             )
     else:
         msg = (
-            f"Scan verify fail: {len(attempts)} attempts-lum required checks pass aagala. "
-            f"Best result kaattrom, aana idhu scan aagum nu guarantee illa. "
-            f"Perusa resolution use pannunga allathu QR payload kammi-a irukkura QR try pannunga."
+            f"Scan verification failed: The required checks did not pass in any of the  attempts. "
+            f"We are showing the best available result, but scanning is not guaranteed to work. "
+            f"Please use a higher resolution or try a QR code with a smaller payload."
         )
 
     return LoopResult(
