@@ -1,7 +1,8 @@
 // Style + settings types. Backend-ku anuppura values idhu dhaan.
 
 export type StyleId = "halftone";
-export type Resolution = 1024 | 2048 | 4096;
+export type Resolution = 1024 | 2048;
+export const RESOLUTIONS: Resolution[] = [1024, 2048];
 export type ValidationStatus = "idle" | "verified" | "failed";
 
 export interface Settings {
@@ -28,5 +29,3 @@ export const STYLES: {
   },
  
 ];
-
-export const RESOLUTIONS: Resolution[] = [1024, 2048, 4096];

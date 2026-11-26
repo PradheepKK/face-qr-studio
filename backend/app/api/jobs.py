@@ -29,7 +29,7 @@ from app.utils.image_io import decode_image_bgr, encode_png
 router = APIRouter(prefix="/api", tags=["jobs"])
 logger = logging.getLogger("faceqr")
 
-ALLOWED_RES = (1024, 2048, 4096)
+ALLOWED_RES = (1024, 2048)
 # Endha styles-oda renderer ready. Step 11-la "halftone", Step 12-la "pixel" serkkalam.
 BUILT_STYLES: set[str] = {"halftone"}
 _slots = threading.Semaphore(2)  # max 2 jobs oru nerathula
