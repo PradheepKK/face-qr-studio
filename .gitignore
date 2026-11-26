@@ -23,6 +23,7 @@ Thumbs.db
 
 # ML models (download script-la varum)
 backend/models/*.task
-
+backend/models/*.tflite
 # Test output (face images)
 backend/tests/output/
+backend/tests/reference/
