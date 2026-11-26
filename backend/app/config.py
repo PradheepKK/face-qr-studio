@@ -35,8 +35,10 @@ MAX_IMAGE_SIDE = 2048
 MIN_FACE_AREA_RATIO = 0.10
 
 # Frontend-a mattum backend-a call panna allow pannrom (CORS).
-# localhost + local network (192.168.x.x) allow, mobile-la test panna useful.
-CORS_ORIGIN_REGEX = r"http://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3})(:\d+)?"
+CORS_ORIGIN_REGEX = (
+    r"http://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3})(:\d+)?"
+    r"|https://.*\.vercel\.app"
+)
 
 # Person segmentation model (hair, neck, shoulders mask)
 SEG_MODEL_PATH = MODELS_DIR / "selfie_segmenter.tflite"
