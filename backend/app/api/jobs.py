@@ -100,12 +100,12 @@ def _run_job(job_id: str, person_bytes: bytes, qr_bytes: bytes, p: dict) -> None
             store.update(job_id, state="error", error=str(e), error_status=500)
         except ValueError as e:
             store.update(job_id, state="error", error=str(e), error_status=400)
-        except Exception:
-            logger.exception("Job fail aachu")  # payload log aagaadhu
+        except Exception as e:
+            logger.exception("Job failed")
             store.update(
                 job_id,
                 state="error",
-                error="Something went wrong on the server. Please try again.",
+                error=f"DEBUG {type(e).__name__}: {str(e)[:200]}",
                 error_status=500,
             )
 
